@@ -14,7 +14,9 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const rootPath = workspaceFolders[0].uri.fsPath;
-        const envPath = path.join(rootPath, '.env');
+        const config = vscode.workspace.getConfiguration('easySonarPropSetting');
+        const envFileName = config.get<string>('envFileName', '.env');
+        const envPath = path.join(rootPath, envFileName);
         const selectedPath = uri.fsPath;
         const relativePath = `./${path.relative(rootPath, selectedPath)}`;
 
@@ -36,27 +38,50 @@ export function activate(context: vscode.ExtensionContext) {
             fs.writeFileSync(envPath, envContent);
             vscode.window.showInformationMessage(`${key} set to ${envConfig[key]}`);
         } else {
-            vscode.window.showErrorMessage('.env file not found in the root path');
+            vscode.window.showErrorMessage(`${envFileName} file not found in the root path`);
         }
     };
 
     const disposable1 = vscode.commands.registerCommand('easy-sonar-prop-setting.addSonarPath', (uri: vscode.Uri) => {
-        addPathToEnv(uri, 'sonar.path');
+        const config = vscode.workspace.getConfiguration('easySonarPropSetting');
+        const sonarPathKey = config.get<string>('sonarPathKey', 'sonar.path');
+        addPathToEnv(uri, sonarPathKey);
     });
 
     const disposable2 = vscode.commands.registerCommand('easy-sonar-prop-setting.addTestInclusion', (uri: vscode.Uri) => {
-        addPathToEnv(uri, 'test.inclusion');
+        const config = vscode.workspace.getConfiguration('easySonarPropSetting');
+        const testInclusionKey = config.get<string>('testInclusionKey', 'test.inclusion');
+        addPathToEnv(uri, testInclusionKey);
     });
 
     const disposable3 = vscode.commands.registerCommand('easy-sonar-prop-setting.addTestExclusion', (uri: vscode.Uri) => {
-        addPathToEnv(uri, 'test.exclusion');
+        const config = vscode.workspace.getConfiguration('easySonarPropSetting');
+        const testExclusionKey = config.get<string>('testExclusionKey', 'test.exclusion');
+        addPathToEnv(uri, testExclusionKey);
     });
 
     const disposable4 = vscode.commands.registerCommand('easy-sonar-prop-setting.clearAndAddSonarPath', (uri: vscode.Uri) => {
-        addPathToEnv(uri, 'sonar.path', true);
+        const config = vscode.workspace.getConfiguration('easySonarPropSetting');
+        const sonarPathKey = config.get<string>('sonarPathKey', 'sonar.path');
+        const enableClearFunction = config.get<boolean>('enableClearFunction', true);
+        addPathToEnv(uri, sonarPathKey, enableClearFunction);
     });
 
-    context.subscriptions.push(disposable1, disposable2, disposable3, disposable4);
+    const disposable5 = vscode.commands.registerCommand('easy-sonar-prop-setting.clearAndAddTestInclusion', (uri: vscode.Uri) => {
+        const config = vscode.workspace.getConfiguration('easySonarPropSetting');
+        const testInclusionKey = config.get<string>('testInclusionKey', 'test.inclusion');
+        const enableClearTestInclusion = config.get<boolean>('enableClearTestInclusion', false);
+        addPathToEnv(uri, testInclusionKey, enableClearTestInclusion);
+    });
+
+    const disposable6 = vscode.commands.registerCommand('easy-sonar-prop-setting.clearAndAddTestExclusion', (uri: vscode.Uri) => {
+        const config = vscode.workspace.getConfiguration('easySonarPropSetting');
+        const testExclusionKey = config.get<string>('testExclusionKey', 'test.exclusion');
+        const enableClearTestExclusion = config.get<boolean>('enableClearTestExclusion', false);
+        addPathToEnv(uri, testExclusionKey, enableClearTestExclusion);
+    });
+
+    context.subscriptions.push(disposable1, disposable2, disposable3, disposable4, disposable5, disposable6);
 }
 
 export function deactivate() {}
