@@ -6,66 +6,97 @@
   "engines": {
     "vscode": "^1.95.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Oukayuu/vscode-extensions.git"
+  },
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "easy-sonar-prop-setting.addSonarPath",
-        "title": "Add Sonar Path"
+        "command": "easy-sonar-prop-setting.addSonarSources",
+        "title": "Add Sonar Sources"
       },
       {
-        "command": "easy-sonar-prop-setting.addTestInclusion",
-        "title": "Add Test Inclusion"
+        "command": "easy-sonar-prop-setting.clearAndAddSonarSources",
+        "title": "Clear and Add Sonar Sources"
       },
       {
-        "command": "easy-sonar-prop-setting.addTestExclusion",
-        "title": "Add Test Exclusion"
+        "command": "easy-sonar-prop-setting.addSonarTests",
+        "title": "Add Sonar Tests"
       },
       {
-        "command": "easy-sonar-prop-setting.clearAndAddSonarPath",
-        "title": "Clear and Add Sonar Path"
+        "command": "easy-sonar-prop-setting.clearAndAddSonarTests",
+        "title": "Clear and Add Sonar Tests"
       },
       {
-        "command": "easy-sonar-prop-setting.clearAndAddTestInclusion",
-        "title": "Clear and Add Test Inclusion"
+        "command": "easy-sonar-prop-setting.addSonarTestInclusions",
+        "title": "Add Sonar Test Inclusions"
       },
       {
-        "command": "easy-sonar-prop-setting.clearAndAddTestExclusion",
-        "title": "Clear and Add Test Exclusion"
+        "command": "easy-sonar-prop-setting.clearAndAddSonarTestInclusions",
+        "title": "Clear and Add Sonar Test Inclusions"
+      },
+      {
+        "command": "easy-sonar-prop-setting.addSonarExclusions",
+        "title": "Add Sonar Exclusions"
+      },
+      {
+        "command": "easy-sonar-prop-setting.clearAndAddSonarExclusions",
+        "title": "Clear and Add Sonar Exclusions"
+      },
+      {
+        "command": "easy-sonar-prop-setting.runSonarScanner",
+        "title": "Run Sonar Scanner"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "easy-sonar-prop-setting.addSonarPath",
-          "group": "sonar@1"
+          "command": "easy-sonar-prop-setting.addSonarSources",
+          "group": "sonar@1",
+          "when": "config.easySonarPropSetting.enableAddSonarSources"
         },
         {
-          "command": "easy-sonar-prop-setting.addTestInclusion",
-          "group": "sonar@2"
+          "command": "easy-sonar-prop-setting.clearAndAddSonarSources",
+          "group": "sonar@2",
+          "when": "config.easySonarPropSetting.enableClearAndAddSonarSources"
         },
         {
-          "command": "easy-sonar-prop-setting.addTestExclusion",
-          "group": "sonar@3"
+          "command": "easy-sonar-prop-setting.addSonarTests",
+          "group": "sonar@3",
+          "when": "config.easySonarPropSetting.enableAddSonarTests"
         },
         {
-          "command": "easy-sonar-prop-setting.clearAndAddSonarPath",
+          "command": "easy-sonar-prop-setting.clearAndAddSonarTests",
           "group": "sonar@4",
-          "when": "config.easySonarPropSetting.enableClearFunction"
+          "when": "config.easySonarPropSetting.enableClearAndAddSonarTests"
         },
         {
-          "command": "easy-sonar-prop-setting.clearAndAddTestInclusion",
+          "command": "easy-sonar-prop-setting.addSonarTestInclusions",
           "group": "sonar@5",
-          "when": "config.easySonarPropSetting.enableClearTestInclusion"
+          "when": "config.easySonarPropSetting.enableAddSonarTestInclusions"
         },
         {
-          "command": "easy-sonar-prop-setting.clearAndAddTestExclusion",
+          "command": "easy-sonar-prop-setting.clearAndAddSonarTestInclusions",
           "group": "sonar@6",
-          "when": "config.easySonarPropSetting.enableClearTestExclusion"
+          "when": "config.easySonarPropSetting.enableClearAndAddSonarTestInclusions"
+        },
+        {
+          "command": "easy-sonar-prop-setting.addSonarExclusions",
+          "group": "sonar@7",
+          "when": "config.easySonarPropSetting.enableAddSonarExclusions"
+        },
+        {
+          "command": "easy-sonar-prop-setting.clearAndAddSonarExclusions",
+          "group": "sonar@8",
+          "when": "config.easySonarPropSetting.enableClearAndAddSonarExclusions"
         }
       ]
     },
@@ -73,40 +104,80 @@
       "type": "object",
       "title": "Easy Sonar Prop Setting",
       "properties": {
-        "easySonarPropSetting.envFileName": {
+        "easySonarPropSetting.propertiesFileName": {
           "type": "string",
-          "default": ".env",
-          "description": "The name of the setting file."
+          "default": "sonar-project.properties",
+          "description": "The name of the properties file."
         },
-        "easySonarPropSetting.sonarPathKey": {
+        "easySonarPropSetting.sonarSourcesKey": {
           "type": "string",
-          "default": "sonar.path",
-          "description": "The key for the sonar path."
+          "default": "sonar.sources",
+          "description": "The key for the sonar sources."
         },
-        "easySonarPropSetting.testInclusionKey": {
+        "easySonarPropSetting.sonarTestsKey": {
           "type": "string",
-          "default": "test.inclusion",
-          "description": "The key for the test inclusion path."
+          "default": "sonar.tests",
+          "description": "The key for the sonar tests."
         },
-        "easySonarPropSetting.testExclusionKey": {
+        "easySonarPropSetting.sonarTestInclusionsKey": {
           "type": "string",
-          "default": "test.exclusion",
-          "description": "The key for the test exclusion path."
+          "default": "sonar.test.inclusions",
+          "description": "The key for the sonar test inclusions."
         },
-        "easySonarPropSetting.enableClearFunction": {
+        "easySonarPropSetting.sonarExclusionsKey": {
+          "type": "string",
+          "default": "sonar.exclusions",
+          "description": "The key for the sonar exclusions."
+        },
+        "easySonarPropSetting.enableAddSonarSources": {
           "type": "boolean",
           "default": true,
-          "description": "Enable or disable the clear function."
+          "description": "Enable or disable the add function for sonar sources."
         },
-        "easySonarPropSetting.enableClearTestInclusion": {
+        "easySonarPropSetting.enableClearAndAddSonarSources": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the clear and add function for sonar sources."
+        },
+        "easySonarPropSetting.enableAddSonarTests": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the add function for sonar tests."
+        },
+        "easySonarPropSetting.enableClearAndAddSonarTests": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the clear and add function for sonar tests."
+        },
+        "easySonarPropSetting.enableAddSonarTestInclusions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the add function for sonar test inclusions."
+        },
+        "easySonarPropSetting.enableClearAndAddSonarTestInclusions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the clear and add function for sonar test inclusions."
+        },
+        "easySonarPropSetting.enableAddSonarExclusions": {
           "type": "boolean",
           "default": false,
-          "description": "Enable or disable the clear function for test inclusion."
+          "description": "Enable or disable the add function for sonar exclusions."
         },
-        "easySonarPropSetting.enableClearTestExclusion": {
+        "easySonarPropSetting.enableClearAndAddSonarExclusions": {
           "type": "boolean",
           "default": false,
-          "description": "Enable or disable the clear function for test exclusion."
+          "description": "Enable or disable the clear and add function for sonar exclusions."
+        },
+        "easySonarPropSetting.showRunSonarScannerButton": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show or hide the Run Sonar Scanner button in the status bar."
+        },
+        "easySonarPropSetting.runSonarScannerButtonText": {
+          "type": "string",
+          "default": "$(play) Run Sonar Scanner",
+          "description": "The text for the Run Sonar Scanner button in the status bar."
         }
       }
     }
