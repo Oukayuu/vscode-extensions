@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import * as dotenv from "dotenv";
 
 export function activate(context: vscode.ExtensionContext) {
   console.log(
@@ -27,33 +26,42 @@ export function activate(context: vscode.ExtensionContext) {
     );
     const propertiesPath = path.join(rootPath, propertiesFileName);
     const selectedPath = uri.fsPath;
-    const relativePath = `./${path.relative(rootPath, selectedPath)}`;
+    const relativePath = `./${path.posix.relative(rootPath, selectedPath)}`;
 
     if (fs.existsSync(propertiesPath)) {
-      const propertiesConfig = dotenv.parse(fs.readFileSync(propertiesPath));
-      if (clear) {
-        propertiesConfig[key] = relativePath;
-      } else {
-        const existingPaths = propertiesConfig[key]
-          ? propertiesConfig[key].split(", ")
-          : [];
-        if (!existingPaths.includes(relativePath)) {
-          existingPaths.push(relativePath);
-          propertiesConfig[key] = existingPaths.join(", ");
+      const fileContent = fs.readFileSync(propertiesPath, "utf-8");
+      const lines = fileContent.split("\n");
+      const newLines = [];
+      let keyFound = false;
+
+      for (const line of lines) {
+        if (line.startsWith(`${key}=`)) {
+          keyFound = true;
+          if (clear) {
+            newLines.push(`${key}=${relativePath}`);
+          } else {
+            const existingPaths = line.substring(key.length + 1).split(", ");
+            if (!existingPaths.includes(relativePath)) {
+              existingPaths.push(relativePath);
+              newLines.push(`${key}=${existingPaths.join(", ")}`);
+            } else {
+              vscode.window.showErrorMessage(
+                `${relativePath} is already in ${key}`
+              );
+              return;
+            }
+          }
         } else {
-          vscode.window.showErrorMessage(
-            `${relativePath} is already in ${key}`
-          );
-          return;
+          newLines.push(line);
         }
       }
-      const propertiesContent = Object.keys(propertiesConfig)
-        .map((k) => `${k}=${propertiesConfig[k]}`)
-        .join("\n");
-      fs.writeFileSync(propertiesPath, propertiesContent);
-      vscode.window.showInformationMessage(
-        `${key} set to ${propertiesConfig[key]}`
-      );
+
+      if (!keyFound) {
+        newLines.push(`${key}=${relativePath}`);
+      }
+
+      fs.writeFileSync(propertiesPath, newLines.join("\n"));
+      vscode.window.showInformationMessage(`${key} set to ${relativePath}`);
     } else {
       vscode.window.showErrorMessage(
         `${propertiesFileName} file not found in the root path`
