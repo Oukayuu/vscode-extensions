@@ -31,8 +31,7 @@
 * `easySonarPropSetting.enableClearAndAddSonarTestInclusions`: SonarQube のテストインクルージョンパスクリア＆追加機能を有効/無効に設定
 * `easySonarPropSetting.enableAddSonarExclusions`: SonarQube の除外パス追加機能を有効/無効に設定
 * `easySonarPropSetting.enableClearAndAddSonarExclusions`: SonarQube の除外パスクリア＆追加機能を有効/無効に設定
-* `easySonarPropSetting.showRunSonarScannerButton`: ステータスバーに `Run Sonar Scanner` ボタンを表示/非表示に設定
-* `easySonarPropSetting.runSonarScannerButtonText`: ステータスバーの `Run Sonar Scanner` ボタンのテキストを設定
+* `easySonarPropSetting.enableRunSonarScanner`: Run Sonar Scannerの機能を有効/無効に設定
 
 ---
 

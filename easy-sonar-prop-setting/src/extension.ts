@@ -18,15 +18,23 @@ export function activate(context: vscode.ExtensionContext) {
       return;
     }
 
-    const rootPath = workspaceFolders[0].uri.fsPath;
+    const selectedPath = uri.fsPath;
+    const rootFolder = workspaceFolders.find(folder => selectedPath.startsWith(folder.uri.fsPath));
+    if (!rootFolder) {
+      vscode.window.showErrorMessage("Selected path is not within any workspace folder");
+      return;
+    }
+    const rootPath = rootFolder.uri.fsPath;
     const config = vscode.workspace.getConfiguration("easySonarPropSetting");
     const propertiesFileName = config.get<string>(
       "propertiesFileName",
       "sonar-project.properties"
     );
     const propertiesPath = path.join(rootPath, propertiesFileName);
-    const selectedPath = uri.fsPath;
-    const relativePath = `./${path.relative(rootPath, selectedPath)}`.replace(/\\/g, "/");
+    const relativePath = `./${path.relative(rootPath, selectedPath)}`.replace(
+      /\\/g,
+      "/"
+    );
 
     if (fs.existsSync(propertiesPath)) {
       const fileContent = fs.readFileSync(propertiesPath, "utf-8");
@@ -34,34 +42,36 @@ export function activate(context: vscode.ExtensionContext) {
       const newLines = [];
       let keyFound = false;
 
-for (const line of lines) {
-  if (line.startsWith(`${key}=`) || line.startsWith(`${key} =`)) {
-    keyFound = true;
-    if (clear) {
-      newLines.push(`${key} = ${relativePath}`);
-    } else {
-      const existingPaths = line.includes("=")
-        ? line
-            .split("=")[1]
-            .split(",")
-            .map((p) => p.trim())
-        : [];
-      if (!existingPaths.includes(relativePath)) {
-        existingPaths.push(relativePath);
-        newLines.push(`${key} = ${existingPaths.join(", ")}`);
-      } else {
-        vscode.window.showErrorMessage(`${relativePath} is already in ${key}`);
-        return;
+      for (const line of lines) {
+        if (line.startsWith(`${key}=`) || line.startsWith(`${key} =`)) {
+          keyFound = true;
+          if (clear) {
+            newLines.push(`${key} = ${relativePath}`);
+          } else {
+            const existingPaths = line.includes("=")
+              ? line
+                  .split("=")[1]
+                  .split(",")
+                  .map((p) => p.trim())
+              : [];
+            if (!existingPaths.includes(relativePath)) {
+              existingPaths.push(relativePath);
+              newLines.push(`${key} = ${existingPaths.join(", ")}`);
+            } else {
+              vscode.window.showErrorMessage(
+                `${relativePath} is already in ${key}`
+              );
+              return;
+            }
+          }
+        } else {
+          newLines.push(line);
+        }
       }
-    }
-  } else {
-    newLines.push(line);
-  }
-}
 
-if (!keyFound) {
-  newLines.push(`${key} = ${relativePath}`);
-}
+      if (!keyFound) {
+        newLines.push(`${key} = ${relativePath}`);
+      }
       fs.writeFileSync(propertiesPath, newLines.join("\n"));
       vscode.window.showInformationMessage(`${key} set to ${relativePath}`);
     } else {
@@ -190,14 +200,8 @@ if (!keyFound) {
 
   const disposableRunSonarScanner = vscode.commands.registerCommand(
     "easy-sonar-prop-setting.runSonarScanner",
-    () => {
-      const workspaceFolders = vscode.workspace.workspaceFolders;
-      if (!workspaceFolders) {
-        vscode.window.showErrorMessage("No workspace folder is open");
-        return;
-      }
-
-      const rootPath = workspaceFolders[0].uri.fsPath;
+    (uri: vscode.Uri) => {
+      const rootPath = uri.fsPath.replace(/\/sonar-project\.properties$/, "");
       const terminal = vscode.window.createTerminal("Sonar Scanner");
       terminal.show();
       terminal.sendText(`cd ${rootPath}`);
@@ -216,28 +220,6 @@ if (!keyFound) {
     disposableClearAndAddSonarExclusions,
     disposableRunSonarScanner
   );
-
-  // ステータスバーにボタンを追加
-  const config = vscode.workspace.getConfiguration("easySonarPropSetting");
-  const showRunSonarScannerButton = config.get<boolean>(
-    "showRunSonarScannerButton",
-    true
-  );
-  const runSonarScannerButtonText = config.get<string>(
-    "runSonarScannerButtonText",
-    "$(play) Run Sonar Scanner"
-  );
-
-  if (showRunSonarScannerButton) {
-    const statusBarItem = vscode.window.createStatusBarItem(
-      vscode.StatusBarAlignment.Left,
-      100
-    );
-    statusBarItem.text = runSonarScannerButtonText;
-    statusBarItem.command = "easy-sonar-prop-setting.runSonarScanner";
-    statusBarItem.show();
-    context.subscriptions.push(statusBarItem);
-  }
 }
 
 export function deactivate() {}
