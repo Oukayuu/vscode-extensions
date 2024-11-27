@@ -201,7 +201,7 @@ export function activate(context: vscode.ExtensionContext) {
   const disposableRunSonarScanner = vscode.commands.registerCommand(
     "easy-sonar-prop-setting.runSonarScanner",
     (uri: vscode.Uri) => {
-      const rootPath = uri.fsPath.replace(/\/sonar-project\.properties$/, "");
+      const rootPath = uri.fsPath.replace(/\\/g, "/").replace(/\/sonar-project\.properties$/, "");
       const terminal = vscode.window.createTerminal("Sonar Scanner");
       terminal.show();
       terminal.sendText(`cd ${rootPath}`);
